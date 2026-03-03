@@ -189,7 +189,7 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | [agent_with_subagent.py](agent_with_subagent.py) | Aislamiento de contexto con subagentes para mantener los prompts enfocados en herramientas relevantes. |
 | [agent_without_subagent.py](agent_without_subagent.py) | Ejemplo de inflado de contexto cuando un solo agente carga todos los esquemas de herramientas en un mismo prompt. |
 | [agent_summarization.py](agent_summarization.py) | Compactación de contexto mediante middleware de resumen para reducir el uso de tokens en conversaciones largas. |
-| [workflow_magenticone.py](workflow_magenticone.py) | Un workflow multi-agente MagenticOne. |
+| [agent_tool_approval.py](agent_tool_approval.py) | Agente independiente con aprobación de herramientas — controla operaciones sensibles antes de ejecutarlas. |
 | [agent_middleware.py](agent_middleware.py) | Middleware de agente, chat y funciones para logging, timing y bloqueo. |
 | [agent_knowledge_aisearch.py](agent_knowledge_aisearch.py) | Recuperación de conocimiento (RAG) usando Azure AI Search con AgentFrameworkAzureAISearchRAG. |
 | [agent_knowledge_sqlite.py](agent_knowledge_sqlite.py) | Recuperación de conocimiento (RAG) usando un proveedor de contexto personalizado con SQLite FTS5. |
@@ -218,6 +218,14 @@ Puedes ejecutar los ejemplos en este repositorio ejecutando los scripts en el di
 | [workflow_converge.py](workflow_converge.py) | Un workflow con rama y convergencia: Revisor enruta a Publicador o Editor y luego converge antes del resumen final. |
 | [workflow_handoffbuilder.py](workflow_handoffbuilder.py) | Orquestación de handoff autónoma usando `HandoffBuilder` (los agentes se transfieren el control sin HITL). |
 | [workflow_handoffbuilder_rules.py](workflow_handoffbuilder_rules.py) | Orquestación de handoff con reglas explícitas usando `HandoffBuilder.add_handoff()`. |
+| [workflow_hitl_requests.py](workflow_hitl_requests.py) | Chat HITL simple — siempre pausa para entrada humana después de cada respuesta del agente (`ctx.request_info`, `@response_handler`). |
+| [workflow_hitl_requests_structured.py](workflow_hitl_requests_structured.py) | Planificador de viajes HITL con salidas estructuradas — el agente decide cuándo preguntar vs. finalizar vía `PlannerOutput.status`. |
+| [workflow_hitl_tool_approval.py](workflow_hitl_tool_approval.py) | Workflow de agente de correo con `@tool(approval_mode="always_require")` para controlar llamadas sensibles. |
+| [workflow_hitl_checkpoint.py](workflow_hitl_checkpoint.py) | Revisión de contenido con `FileCheckpointStorage` — pausar, salir del proceso y reanudar desde checkpoint. |
+| [workflow_hitl_checkpoint_pg.py](workflow_hitl_checkpoint_pg.py) | Mismo workflow de revisión con un backend personalizado `PostgresCheckpointStorage`. |
+| [workflow_hitl_handoff.py](workflow_hitl_handoff.py) | Handoff interactivo (sin modo autónomo) — el framework pausa para entrada del usuario vía `HandoffAgentUserRequest`. |
+| [workflow_hitl_handoff_approval.py](workflow_hitl_handoff_approval.py) | Handoff con entrada de usuario + aprobación de herramientas combinados en el mismo bucle de eventos. |
+| [workflow_hitl_magentic.py](workflow_hitl_magentic.py) | Orquestación Magentic con revisión de plan — el humano puede aprobar o revisar el plan antes de la ejecución. |
 | [agent_otel_aspire.py](agent_otel_aspire.py) | Un agente con trazas, métricas y logs estructurados de OpenTelemetry exportados al [Aspire Dashboard](https://aspire.dev/dashboard/standalone/). |
 | [agent_otel_appinsights.py](agent_otel_appinsights.py) | Un agente con trazas, métricas y logs estructurados de OpenTelemetry exportados a [Azure Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview). Requiere aprovisionamiento de Azure con `azd provision`. |
 | [agent_evaluation_generate.py](agent_evaluation_generate.py) | Genera datos sintéticos de evaluación para el agente planificador de viajes. |

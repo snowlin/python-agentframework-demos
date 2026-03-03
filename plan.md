@@ -873,38 +873,76 @@ Unlike other orchestrations, Handoff is inherently interactive:
 • Use .with_autonomous_mode() to skip user input
 ```
 
-### Slide 27: Handoff with user input + tool approval
+### Slide 27: Handoff — Interactive user input
 ```
 agent-framework
 
-Handoff with user input and tool approval
+Handoff: Interactive user input (no autonomous mode)
+Without .with_autonomous_mode(), the framework pauses for user input.
+
+# No .with_autonomous_mode() — pauses for user input between turns
+workflow = (HandoffBuilder(
+    name="customer_support",
+    participants=[triage, order_agent, return_agent])
+  .with_start_agent(triage)
+  .build())
+
+# Event loop handles HandoffAgentUserRequest events
+for request_event in request_events:
+  if isinstance(request_event.data, HandoffAgentUserRequest):
+    # Show agent's response
+    for msg in request_event.data.agent_response.messages[-3:]:
+      print(f"{msg.author_name}: {msg.text}")
+
+    user_input = input("You: ")
+    if user_input == "exit":
+      responses[id] = HandoffAgentUserRequest.terminate()
+    else:
+      responses[id] = HandoffAgentUserRequest.create_response(user_input)
+
+Full example: workflow_hitl_handoff.py
+
+Speaker notes:
+  "This is the simplest form of HITL with Handoff. Without autonomous mode,
+  every time an agent responds without handing off, the framework emits a
+  HandoffAgentUserRequest. Your app shows the agent's message and prompts
+  the user. You can also call terminate() to end the workflow early.
+  This is the default behavior — autonomous mode is the opt-in."
+```
+
+### Slide 28: Handoff — Adding tool approval
+```
+agent-framework
+
+Handoff: Adding tool approval
+Combine user input with tool approval in the same event loop.
 
 @tool(approval_mode="always_require")
 def process_refund(order_number: str) -> str:
   """Process a refund for a given order."""
   return f"Refund processed for order {order_number}."
 
-workflow = (HandoffBuilder(
-    name="customer_support",
-    participants=[triage, refund_agent, order_agent])
-  .with_start_agent(triage)
-  .build())
-
+# Same HandoffBuilder, but agents have approval-required tools
 # The event loop handles BOTH types of requests:
-for event in pending_requests:
-  if isinstance(event.data, HandoffAgentUserRequest):
-    # Agent needs user input
-    response = HandoffAgentUserRequest.create_response(user_input)
-    # Or end the workflow early:
-    # response = HandoffAgentUserRequest.terminate()
-  elif isinstance(event.data, FunctionApprovalRequestContent):
+for request_event in request_events:
+  if isinstance(request_event.data, HandoffAgentUserRequest):
+    # Agent needs user input (same as before)
+    responses[id] = HandoffAgentUserRequest.create_response(user_input)
+
+  elif isinstance(request_event.data, Content):
     # Agent wants to call a tool requiring approval
-    response = event.data.create_response(approved=True)
+    print(f"Tool: {request_event.data.function_call.name}")
+    approved = input("Approve? (y/n): ") == "y"
+    responses[id] = request_event.data.to_function_approval_response(approved)
 
-# For durable handoff workflows, add checkpoint_storage to HandoffBuilder:
-# HandoffBuilder(..., checkpoint_storage=FileCheckpointStorage("./checkpoints"))
+Full example: workflow_hitl_handoff_approval.py
 
-Full example: workflow_hitl_handoff.py
+Speaker notes:
+  "You can combine user input and tool approval in the same handoff workflow.
+  The event loop just checks the type of each request: HandoffAgentUserRequest
+  for conversational input, or Content with a function_approval_request for
+  tool gating. This is the same @tool(approval_mode='always_require') decorator
+  we saw earlier — it works the same way inside a handoff workflow."
 ```
 
 ### Slide 29: Next steps / resources

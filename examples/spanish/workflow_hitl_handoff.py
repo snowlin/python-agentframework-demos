@@ -1,14 +1,14 @@
-"""Interactive handoff workflow with human-in-the-loop user input.
+"""Workflow interactivo de handoff con entrada de usuario human-in-the-loop.
 
-Demonstrates: HandoffBuilder without autonomous mode — the workflow pauses
-for user input between agent turns via HandoffAgentUserRequest events.
+Demuestra: HandoffBuilder sin modo autónomo — el workflow pausa para pedir
+entrada del usuario entre turnos de agentes mediante eventos HandoffAgentUserRequest.
 
-A triage agent routes customer issues to specialist agents (order tracking,
-returns). Without .with_autonomous_mode(), the framework pauses after each
-agent response and waits for the human to provide the next message.
+Un agente de triaje dirige problemas de clientes a agentes especialistas (seguimiento
+de pedidos, devoluciones). Sin .with_autonomous_mode(), el framework pausa después de
+cada respuesta del agente y espera a que el humano proporcione el siguiente mensaje.
 
-Run:
-    uv run examples/workflow_hitl_handoff.py
+Ejecutar:
+    uv run examples/spanish/workflow_hitl_handoff.py
 """
 
 import asyncio
@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
 
-# Configure the chat client based on the API host
+# Configura el cliente según el host de la API
 async_credential = None
 if API_HOST == "azure":
     async_credential = DefaultAzureCredential()
@@ -47,17 +47,17 @@ else:
     )
 
 
-# --- Agents ---
+# --- Agentes ---
 
 triage_agent = Agent(
     client=client,
     name="triage_agent",
     instructions=(
-        "You are a customer-support triage agent. Greet the customer, understand their issue, "
-        "and hand off to the right specialist: order_agent for order inquiries, "
-        "return_agent for returns. You cannot handle specific issues yourself — always hand off. "
-        "Do NOT ask for contact information, email, or phone number. "
-        "Do NOT say 'Goodbye' until the customer explicitly confirms they have no more questions."
+        "Eres un agente de triaje de soporte al cliente. Saluda al cliente, entiende su problema "
+        "y transfiere al especialista correcto: order_agent para consultas de pedidos, "
+        "return_agent para devoluciones. No puedes manejar problemas específicos tú mismo — siempre transfiere. "
+        "NO pidas información de contacto, correo electrónico ni número de teléfono. "
+        "NO digas 'Adiós' hasta que el cliente confirme explícitamente que no tiene más preguntas."
     ),
 )
 
@@ -65,8 +65,8 @@ order_agent = Agent(
     client=client,
     name="order_agent",
     instructions=(
-        "You handle order status inquiries. Help the customer with their order. "
-        "When done, hand off back to triage_agent."
+        "Te encargas de consultas sobre el estado de pedidos. Ayuda al cliente con su pedido. "
+        "Cuando termines, transfiere de vuelta a triage_agent."
     ),
 )
 
@@ -74,14 +74,14 @@ return_agent = Agent(
     client=client,
     name="return_agent",
     instructions=(
-        "You handle product returns. Help the customer initiate a return. "
-        "The only details you need are the order number (3 digits) and whether they want a refund or replacement. "
-        "Keep it simple and fast. When done, hand off back to triage_agent."
+        "Te encargas de devoluciones de productos. Ayuda al cliente a iniciar una devolución. "
+        "Los únicos datos que necesitas son el número de pedido (3 dígitos) y si quieren un reembolso o reemplazo. "
+        "Mantenlo simple y rápido. Cuando termines, transfiere de vuelta a triage_agent."
     ),
 )
 
 
-# --- Main ---
+# --- Principal ---
 
 
 # --- Workflow ---
@@ -100,9 +100,9 @@ workflow = (
 
 
 async def main() -> None:
-    """Run an interactive handoff workflow with user input."""
-    initial_message = "Hi, I need help with an order."
-    print(f"👤 You: {initial_message}\n")
+    """Ejecuta un workflow interactivo de handoff con entrada del usuario."""
+    initial_message = "Hola, necesito ayuda con un pedido."
+    print(f"👤 Tú: {initial_message}\n")
 
     stream = workflow.run(initial_message, stream=True)
 
@@ -112,7 +112,7 @@ async def main() -> None:
             if event.type == "request_info":
                 pending.append(event)
             elif event.type == "handoff_sent":
-                print(f"\n🔀 [Handoff: {event.data.source} → {event.data.target}]")
+                print(f"\n🔀 [Transferencia: {event.data.source} → {event.data.target}]")
             elif event.type == "output" and isinstance(event.data, AgentResponse):
                 for msg in event.data.messages:
                     if msg.text:
@@ -121,7 +121,7 @@ async def main() -> None:
                 if isinstance(event.data, list) and event.data:
                     last_msg = event.data[-1]
                     print(f"\n🤖 {last_msg.author_name or last_msg.role}: {last_msg.text}")
-                print("\n✅ Conversation ended.")
+                print("\n✅ Conversación finalizada.")
 
         if not pending:
             break
@@ -129,7 +129,7 @@ async def main() -> None:
         responses: dict[str, Any] = {}
         for request_event in pending:
             if isinstance(request_event.data, HandoffAgentUserRequest):
-                # Show agent's response
+                # Muestra la respuesta del agente
                 agent_response = request_event.data.agent_response
                 if agent_response.messages:
                     for msg in agent_response.messages[-3:]:
@@ -137,9 +137,9 @@ async def main() -> None:
                             speaker = msg.author_name or msg.role
                             print(f"🤖 {speaker}: {msg.text}")
 
-                # Get user input
-                user_input = input("\n👤 You: ").strip()
-                if user_input.lower() in ("exit", "quit"):
+                # Obtiene la entrada del usuario
+                user_input = input("\n👤 Tú: ").strip()
+                if user_input.lower() in ("exit", "salir", "quit"):
                     responses[request_event.request_id] = HandoffAgentUserRequest.terminate()
                 else:
                     responses[request_event.request_id] = HandoffAgentUserRequest.create_response(user_input)
