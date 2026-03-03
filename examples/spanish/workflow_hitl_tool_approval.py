@@ -216,8 +216,8 @@ async def main() -> None:
             print(f"🔒 Aprobación solicitada para: {data.function_call.name}")
             print(f"   Argumentos:\n{arguments}")
 
-            approval = input("   ¿Aprobar/Approve? (y/n): ").strip().lower()
-            approved = approval == "y"
+            approval = input("   ¿Aprobar/Approve? (s/y): ").strip().lower()
+            approved = approval in ("s", "y")
             print(f"   {'✅ Aprobado' if approved else '❌ Rechazado'}\n")
             responses[request_info_event.request_id] = data.to_function_approval_response(approved=approved)
 
