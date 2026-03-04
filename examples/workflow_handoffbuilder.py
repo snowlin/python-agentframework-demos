@@ -25,12 +25,10 @@ from agent_framework.openai import OpenAIChatClient
 from agent_framework.orchestrations import HandoffBuilder
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
 from dotenv import load_dotenv
-from rich.logging import RichHandler
+from rich.console import Console
 
-log_handler = RichHandler(show_path=False, rich_tracebacks=True, show_level=False)
-logging.basicConfig(level=logging.WARNING, handlers=[log_handler], force=True, format="%(message)s")
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.WARNING)
+console = Console()
 
 load_dotenv(override=True)
 API_HOST = os.getenv("API_HOST", "github")
@@ -135,19 +133,21 @@ async def main() -> None:
         # ── Run ───────────────────────────────────────────────────────────
 
         prompt = "Write a LinkedIn post about deploying Python agents on Azure Container Apps."
-        logger.info("Prompt: %s\n", prompt)
+        console.print(f"[bold]Prompt:[/bold] {prompt}\n")
 
         current_agent = None
 
         async for event in workflow.run(prompt, stream=True):
             if event.type == "handoff_sent":
-                logger.info("\n[Handoff] %s -> %s\n", event.data.source, event.data.target)
+                console.print(
+                    f"\n🔀 [bold yellow]Handoff:[/bold yellow] {event.data.source} → {event.data.target}\n"
+                )
 
             elif event.type == "output" and isinstance(event.data, AgentResponseUpdate):
                 if event.executor_id != current_agent:
                     current_agent = event.executor_id
-                    print(f"\n--- {current_agent} ---")
-                print(event.data.text, end="", flush=True)
+                    console.print(f"\n🤖 [bold cyan]{current_agent}[/bold cyan]")
+                console.print(event.data.text, end="")
 
     if async_credential:
         await async_credential.close()

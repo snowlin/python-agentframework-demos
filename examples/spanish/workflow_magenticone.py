@@ -116,6 +116,21 @@ def handle_stream_event(event: WorkflowEvent, last_message_id: str | None) -> st
         console.print(event.data, end="")
         return last_message_id
 
+    # Un participante terminó — muestra su salida
+    if event.type == "executor_completed" and isinstance(event.data, list) and event.data:
+        parts = [msg.text for msg in event.data if isinstance(msg, AgentResponseUpdate) and msg.text]
+        if parts:
+            full_text = "".join(parts)
+            console.print(
+                Panel(
+                    Markdown(full_text),
+                    title=f"🤖 {event.executor_id}",
+                    border_style="cyan",
+                    padding=(1, 2),
+                )
+            )
+        return last_message_id
+
     if event.type == "magentic_orchestrator":
         console.print()
         emoji = "✅" if event.data.event_type.name == "PROGRESS_LEDGER_UPDATED" else "🧭"
