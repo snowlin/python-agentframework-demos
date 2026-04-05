@@ -1,16 +1,32 @@
-import asyncio
-import logging
-import os
-import random
-import uuid
-from typing import Annotated
+# ============ 标准库导入 ============
+import asyncio                    # 异步编程库 - 用于创建异步函数和事件循环
+import logging                    # 日志库 - 用于记录程序运行信息
+import os                         # 操作系统库 - 用于读取环境变量
+import random                     # 随机数库 - 用于生成随机数据
+import uuid                       # UUID库 - 用于生成唯一标识符
 
+# ============ 第三方库导入 ============
+from typing import Annotated      # 类型注解 - 用于参数的详细类型说明
+
+# Agent框架导入 - 核心的Agent和工具装饰器
 from agent_framework import Agent, tool
+
+# OpenAI客户端导入 - 用于与OpenAI兼容的API通信
 from agent_framework.openai import OpenAIChatClient
+
+# Redis历史提供者导入 - 用于将对话历史存储到Redis
 from agent_framework.redis import RedisHistoryProvider
+
+# Azure身份验证库 - 用于Azure凭证管理和令牌生成
 from azure.identity.aio import DefaultAzureCredential, get_bearer_token_provider
+
+# 环境变量管理库 - 用于从.env文件加载环境变量
 from dotenv import load_dotenv
+
+# Pydantic字段库 - 用于定义参数的元数据和验证
 from pydantic import Field
+
+# Rich库导入 - 用于美化控制台输出（彩色打印、日志等）
 from rich import print
 from rich.logging import RichHandler
 
